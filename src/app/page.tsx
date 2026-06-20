@@ -12,13 +12,13 @@ import { getUserUnlocks, saveUserUnlock } from "./actions";
 // ==========================================
 
 const client = createThirdwebClient({
-  clientId: "5f62d7285afa828b8e3a4efb68283144", 
+  clientId: "12f38ac667bbd2b0e5f07dccac1395c3", // 确保这是你最新的 Client ID
 });
 
 const tgyContract = getContract({
   client,
   chain: defineChain(137), // Polygon Mainnet
-  address: "0x424EDC04430186EfD49969a6D4E5ce5Ed684d16c", // 你的主网合约地址
+  address: "0x424EDC04430186EfD49969a6D4E5ce5Ed684d16c", 
 });
 
 // --- 盲盒奖池等级配置 ---
@@ -28,9 +28,9 @@ const TIER_3_POOLS = [7, 8, 9];
 
 // 🌟 精准库存配置映射表
 const getMaxSupplyForId = (id: number) => {
-  if (id >= 0 && id <= 3) return 2500; // Tier 1 每款 2500个
-  if (id >= 4 && id <= 6) return 1888; // Tier 2 每款 1888个
-  if (id >= 7 && id <= 9) return 999;  // Tier 3 每款 999个
+  if (id >= 0 && id <= 3) return 2500; 
+  if (id >= 4 && id <= 6) return 1888; 
+  if (id >= 7 && id <= 9) return 999;  
   return 0;
 };
 
@@ -252,29 +252,20 @@ export default function Home() {
   const hasFetchedNfts = !!(allNfts && Array.isArray(allNfts) && allNfts.length > 0);
   const isCurrentlyLoadingNfts = isAllNftsLoading && !rpcTimeout && !hasFetchedNfts;
 
-  // 🌟 全新修复：精准计算真实发售库存
   const getInventory = (targetIds: number[]) => {
-    // 动态计算该盲盒的总发行量
     let maxBoxSupply = 0;
-    targetIds.forEach(id => {
-       maxBoxSupply += getMaxSupplyForId(id);
-    });
+    targetIds.forEach(id => { maxBoxSupply += getMaxSupplyForId(id); });
     
-    if (!hasFetchedNfts) {
-        return { max: maxBoxSupply, remaining: maxBoxSupply };
-    }
+    if (!hasFetchedNfts) { return { max: maxBoxSupply, remaining: maxBoxSupply }; }
     
     let totalMinted = 0;
     targetIds.forEach(id => {
       const nft = (allNfts as any[]).find(n => Number(n.id) === id);
-      if (nft && nft.supply) {
-        totalMinted += Number(nft.supply);
-      }
+      if (nft && nft.supply) { totalMinted += Number(nft.supply); }
     });
 
     let remaining = maxBoxSupply - totalMinted;
     if (remaining < 0) remaining = 0;
-    
     return { max: maxBoxSupply, remaining };
   };
 
@@ -321,7 +312,6 @@ export default function Home() {
       }
 
       const txKeys = Object.keys(idCounts);
-      
       if (txKeys.length > 1) {
           alert(`⚠️ ${lang === 'zh' ? '您本次抽中了多种不同的极品茶饼！系统将分为多笔交易上链，请在弹出的钱包中【连续确认所有签名】，切勿中途关闭！' : 'You drew multiple distinct items! This requires multiple wallet confirmations. Please confirm ALL popups.'}`);
       }
@@ -359,11 +349,9 @@ export default function Home() {
         setMintAnim(null);
         handleRefresh(); 
       }, 7000); 
-
       setBuyQuantities(prev => ({ ...prev, [box.id]: 1 }));
 
     } catch (error: any) {
-       console.error("Batch mint failed:", error);
        const errorMsg = error.message || error.toString();
        alert(`❌ ${lang === 'zh' ? '铸造交易失败' : 'Minting Failed'}\n\n原因: ${errorMsg}\n\n💡 检查清单:\n1. 您的钱包是否拥有足够的 USDC 以及支付 Gas 费的 POL (MATIC)？\n2. 您是否在 Thirdweb 后台为抽中的这几个 Token ID 都设置了 Claim Phase (公售阶段)？`);
     }
@@ -396,8 +384,10 @@ export default function Home() {
   if (!isMounted) return null;
 
   return (
-    <main className="min-h-screen bg-[#030604] text-white p-6 md:p-12 font-sans relative overflow-hidden">
+    // 🌟 优化了外层 padding，手机端 p-4，大屏 p-12
+    <main className="min-h-screen bg-[#030604] text-white p-4 sm:p-6 md:p-12 font-sans relative overflow-hidden">
       
+      {/* 背景网格特效 */}
       <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden" style={{ perspective: '800px' }}>
         <div className="absolute w-[200vw] h-[65vh] left-[-50vw] top-0"
              style={{
@@ -424,19 +414,20 @@ export default function Home() {
         <div className="absolute top-1/2 left-0 right-0 h-[40vh] bg-[#030604] -translate-y-1/2 pointer-events-none" style={{ filter: 'blur(50px)', zIndex: 1 }}></div>
       </div>
       
-      <nav className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-16 relative z-50">
+      {/* 🌟 优化了导航栏，手机端垂直居中，大屏两端对齐 */}
+      <nav className="flex flex-col md:flex-row justify-center md:justify-between items-center gap-4 mb-10 md:mb-16 relative z-50 text-center md:text-left w-full">
         <div className="relative">
-          <h1 className="text-3xl font-bold tracking-wider text-white drop-shadow-[0_0_15px_rgba(16,185,129,0.3)]">
+          <h1 className="text-2xl md:text-3xl font-bold tracking-wider text-white drop-shadow-[0_0_15px_rgba(16,185,129,0.3)]">
             TGY<span className="text-emerald-500"> PROTOCOL</span>
           </h1>
-          <p className="text-gray-400 text-sm mt-1">{t.subtitle}</p>
+          <p className="text-gray-400 text-xs md:text-sm mt-1">{t.subtitle}</p>
         </div>
 
-        <div className="flex items-center gap-4 relative">
+        <div className="flex flex-wrap items-center justify-center gap-3 relative mt-4 md:mt-0">
           {account && (
             <button 
               onClick={() => setIsInboxOpen(!isInboxOpen)}
-              className="relative bg-emerald-500/10 backdrop-blur-md border border-emerald-500/30 hover:bg-emerald-500/20 text-emerald-400 px-5 py-2.5 rounded-xl text-xs font-bold transition-all duration-300 flex items-center gap-2 shadow-[0_0_15px_rgba(16,185,129,0.15)]"
+              className="relative bg-emerald-500/10 backdrop-blur-md border border-emerald-500/30 hover:bg-emerald-500/20 text-emerald-400 px-4 md:px-5 py-2.5 rounded-xl text-xs font-bold transition-all duration-300 flex items-center gap-2 shadow-[0_0_15px_rgba(16,185,129,0.15)]"
             >
               {t.inboxBtn}
               {inboxMessages.length > 0 && (
@@ -447,24 +438,25 @@ export default function Home() {
             </button>
           )}
 
-          <div className="glass-connect-wrapper">
+          <div className="glass-connect-wrapper transform scale-90 md:scale-100 origin-center">
             <ConnectButton client={client} />
           </div>
 
           <button
             onClick={() => setLang(lang === "zh" ? "en" : "zh")}
-            className="bg-white/5 backdrop-blur-md border border-white/10 hover:bg-white/10 text-white px-4 py-2.5 rounded-xl text-xs font-mono font-bold transition-all duration-300"
+            className="bg-white/5 backdrop-blur-md border border-white/10 hover:bg-white/10 text-white px-3 md:px-4 py-2.5 rounded-xl text-xs font-mono font-bold transition-all duration-300"
           >
-            {lang === "zh" ? "EN" : "中文"}
+            {lang === "zh" ? "EN" : "中"}
           </button>
 
+          {/* 核销凭证弹窗 */}
           {isInboxOpen && account && (
-            <div className="absolute top-[120%] right-0 w-[90vw] md:w-[420px] bg-[#0a0f0d]/90 backdrop-blur-2xl border border-emerald-500/20 rounded-2xl shadow-[0_10px_50px_rgba(0,0,0,0.8)] overflow-hidden flex flex-col max-h-[70vh] animate-in fade-in slide-in-from-top-4 duration-200">
+            <div className="absolute top-[120%] right-0 md:right-0 w-[90vw] md:w-[420px] bg-[#0a0f0d]/95 backdrop-blur-3xl border border-emerald-500/30 rounded-2xl shadow-[0_10px_50px_rgba(0,0,0,0.9)] overflow-hidden flex flex-col max-h-[70vh] animate-in fade-in slide-in-from-top-4 duration-200 z-[100]">
               <div className="flex justify-between items-center bg-white/5 px-5 py-4 border-b border-white/5">
                 <h3 className="font-bold text-emerald-400 text-sm flex items-center gap-2">{t.inboxTitle}</h3>
-                <button onClick={() => setIsInboxOpen(false)} className="text-gray-500 hover:text-white transition">✕</button>
+                <button onClick={() => setIsInboxOpen(false)} className="text-gray-500 hover:text-white transition w-8 h-8 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10">✕</button>
               </div>
-              <div className="overflow-y-auto p-4 space-y-4">
+              <div className="overflow-y-auto p-4 space-y-4 custom-scrollbar">
                 <div className="bg-amber-500/10 border border-amber-500/30 text-amber-400 text-[10px] p-3 rounded-xl mb-2 leading-relaxed">
                   {t.inboxNotice}
                 </div>
@@ -476,7 +468,7 @@ export default function Home() {
                     <div key={msg.id} className="bg-white/5 border border-white/5 rounded-xl p-4 relative overflow-hidden">
                       <div className="absolute left-0 top-0 w-1 h-full bg-emerald-500 shadow-[0_0_10px_#10b981]"></div>
                       <div className="flex gap-4 mb-3 pb-3 border-b border-white/5">
-                        <div className="w-16 h-16 rounded-lg overflow-hidden bg-black flex-shrink-0 border border-white/10">
+                        <div className="w-14 h-14 md:w-16 md:h-16 rounded-lg overflow-hidden bg-black flex-shrink-0 border border-white/10">
                           {msg.imageUrl ? <MediaRenderer client={client} src={msg.imageUrl} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-xs text-gray-700 bg-gray-900">{t.noImage}</div>}
                         </div>
                         <div className="flex-1">
@@ -488,17 +480,17 @@ export default function Home() {
                       
                       <div className="bg-black/50 p-2.5 rounded-lg border border-emerald-500/30 mb-3 relative overflow-hidden group">
                         <div className="text-[10px] text-emerald-500 mb-1">{t.shippingNotice}</div>
-                        <div className="text-[11px] text-gray-300 font-mono break-all select-all selection:bg-emerald-500/30">
+                        <div className="text-[10px] md:text-[11px] text-gray-300 font-mono break-all select-all selection:bg-emerald-500/30">
                           Tx: <span className="text-white">{msg.txHash}</span>
                         </div>
                       </div>
                       
-                      <div className="flex gap-3">
+                      <div className="flex flex-col sm:flex-row gap-3">
                         <a 
                           href="https://forms.gle/vP4G6Xy42z61YQxK8" 
                           target="_blank" 
                           rel="noopener noreferrer"
-                          className="flex-1 bg-emerald-500 hover:bg-emerald-400 text-[#052b1b] text-xs font-bold py-2.5 px-2 rounded-lg text-center transition-all duration-300 shadow-[0_0_15px_rgba(16,185,129,0.3)] hover:shadow-[0_0_20px_rgba(16,185,129,0.5)] flex items-center justify-center"
+                          className="flex-1 bg-emerald-500 hover:bg-emerald-400 text-[#052b1b] text-xs font-bold py-3 px-2 rounded-lg text-center transition-all duration-300 shadow-[0_0_15px_rgba(16,185,129,0.3)] hover:shadow-[0_0_20px_rgba(16,185,129,0.5)] flex items-center justify-center"
                         >
                           {t.fillShipping}
                         </a>
@@ -506,7 +498,7 @@ export default function Home() {
                           href="https://x.com/TGYprotocol" 
                           target="_blank" 
                           rel="noopener noreferrer"
-                          className="flex-1 bg-white/5 hover:bg-white/10 text-emerald-400 border border-emerald-500/30 text-xs font-bold py-2.5 px-2 rounded-lg text-center transition-all duration-300 flex items-center justify-center"
+                          className="flex-1 bg-white/5 hover:bg-white/10 text-emerald-400 border border-emerald-500/30 text-xs font-bold py-3 px-2 rounded-lg text-center transition-all duration-300 flex items-center justify-center"
                         >
                           {t.twitterClaim}
                         </a>
@@ -520,20 +512,21 @@ export default function Home() {
         </div>
       </nav>
 
-      <div className="max-w-[1400px] mx-auto space-y-16 relative z-10">
+      <div className="max-w-[1400px] mx-auto space-y-12 md:space-y-16 relative z-10 w-full">
         {account && (
           <>
             <section className="relative w-full">
               
-              <div className="mb-10 text-center md:text-left">
-                <p className="text-gray-400 text-lg mb-2">Mystery Boxes</p>
-                <h3 className="text-4xl font-bold tracking-tight text-white drop-shadow-[0_2px_20px_rgba(255,255,255,0.2)]">
+              <div className="mb-8 md:mb-10 text-center md:text-left px-2">
+                <p className="text-gray-400 text-sm md:text-lg mb-1 md:mb-2">Mystery Boxes</p>
+                <h3 className="text-3xl md:text-4xl font-bold tracking-tight text-white drop-shadow-[0_2px_20px_rgba(255,255,255,0.2)]">
                   {t.storeTitle}
                 </h3>
-                <p className="text-emerald-500/80 text-sm mt-3">{t.storeDesc}</p>
+                <p className="text-emerald-500/80 text-xs md:text-sm mt-2 md:mt-3 leading-relaxed">{t.storeDesc}</p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {/* 🌟 盲盒卡片网格：手机 1 列，平板 2 列，电脑 3 列 */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
                 {mysteryBoxes.map((box) => {
                   let isLocked = false;
                   let lockMsg = "";
@@ -554,14 +547,14 @@ export default function Home() {
                   return (
                     <div 
                       key={box.id} 
-                      className={`relative bg-gradient-to-b from-emerald-950/20 to-[#0a0a0a]/80 backdrop-blur-2xl rounded-[2rem] border border-emerald-500/20 overflow-hidden flex flex-col p-6 transition-all duration-500 shadow-[0_8px_30px_rgba(0,0,0,0.5)] ${isLocked ? 'opacity-60 grayscale-[0.5]' : 'hover:border-emerald-500/60 hover:-translate-y-2 hover:shadow-[0_0_50px_rgba(16,185,129,0.2)]'}`}
+                      className={`relative bg-gradient-to-b from-emerald-950/20 to-[#0a0a0a]/80 backdrop-blur-2xl rounded-3xl md:rounded-[2rem] border border-emerald-500/20 overflow-hidden flex flex-col p-5 md:p-6 transition-all duration-500 shadow-[0_8px_30px_rgba(0,0,0,0.5)] ${isLocked ? 'opacity-60 grayscale-[0.5]' : 'hover:border-emerald-500/60 hover:-translate-y-2 hover:shadow-[0_0_50px_rgba(16,185,129,0.2)]'}`}
                     >
                       <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-[50px] pointer-events-none"></div>
 
                       {isLocked && (
                         <div className="absolute inset-0 z-30 bg-[#050505]/70 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center rounded-[2rem]">
-                          <span className="text-5xl mb-4 drop-shadow-2xl">🔒</span>
-                          <span className="text-xs font-bold text-gray-300 max-w-[80%] leading-relaxed bg-black/50 px-4 py-2 rounded-xl border border-white/10 shadow-[0_0_15px_rgba(0,0,0,1)]">
+                          <span className="text-4xl md:text-5xl mb-4 drop-shadow-2xl">🔒</span>
+                          <span className="text-[11px] md:text-xs font-bold text-gray-300 max-w-[90%] md:max-w-[80%] leading-relaxed bg-black/50 px-4 py-2 rounded-xl border border-white/10 shadow-[0_0_15px_rgba(0,0,0,1)]">
                             {lockMsg}
                           </span>
                         </div>
@@ -569,28 +562,28 @@ export default function Home() {
 
                       <div 
                         onClick={() => !isLocked && setPreviewBoxId(box.id)}
-                        className={`w-full aspect-square rounded-2xl bg-black/50 mb-6 overflow-hidden relative z-10 border border-emerald-500/10 flex-shrink-0 flex items-center justify-center shadow-[inset_0_0_20px_rgba(16,185,129,0.1)] group ${isLocked ? '' : 'cursor-pointer'}`}
+                        className={`w-full aspect-square rounded-2xl bg-black/50 mb-5 md:mb-6 overflow-hidden relative z-10 border border-emerald-500/10 flex-shrink-0 flex items-center justify-center shadow-[inset_0_0_20px_rgba(16,185,129,0.1)] group ${isLocked ? '' : 'cursor-pointer'}`}
                       >
-                        <div className="text-8xl group-hover:scale-110 group-hover:rotate-6 transition-transform duration-500 drop-shadow-[0_0_25px_rgba(16,185,129,0.5)]">
+                        <div className="text-7xl md:text-8xl group-hover:scale-110 group-hover:rotate-6 transition-transform duration-500 drop-shadow-[0_0_25px_rgba(16,185,129,0.5)]">
                           🎁
                         </div>
                         
                         {!isLocked && (
                            <div className="absolute inset-0 bg-[#030604]/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center backdrop-blur-[2px]">
-                              <span className="bg-emerald-500/20 border border-emerald-500 text-emerald-400 font-bold px-4 py-2 rounded-full text-sm shadow-[0_0_15px_rgba(16,185,129,0.5)]">
+                              <span className="bg-emerald-500/20 border border-emerald-500 text-emerald-400 font-bold px-4 py-2 rounded-full text-xs md:text-sm shadow-[0_0_15px_rgba(16,185,129,0.5)]">
                                 {t.clickToPreview}
                               </span>
                            </div>
                         )}
                       </div>
 
-                      <div className="flex-1 flex flex-col px-2 z-10">
-                        <h4 className="text-xl font-bold text-white tracking-tight leading-tight mb-2 drop-shadow-md">{box.name}</h4>
-                        <p className="text-sm text-gray-400 mb-6 line-clamp-2">{box.desc}</p>
+                      <div className="flex-1 flex flex-col px-1 md:px-2 z-10">
+                        <h4 className="text-lg md:text-xl font-bold text-white tracking-tight leading-tight mb-2 drop-shadow-md">{box.name}</h4>
+                        <p className="text-xs md:text-sm text-gray-400 mb-5 md:mb-6 line-clamp-2">{box.desc}</p>
 
                         <div className="mt-auto flex flex-col">
                           
-                          <div className="flex justify-between items-center text-[11px] text-gray-400 mb-3 border-b border-white/10 pb-2">
+                          <div className="flex justify-between items-center text-[10px] md:text-[11px] text-gray-400 mb-3 border-b border-white/10 pb-2">
                              <span>{t.stock}</span>
                              <span className="font-mono text-emerald-400 drop-shadow-[0_0_5px_rgba(16,185,129,0.5)]">{remaining} / {max}</span>
                           </div>
@@ -598,24 +591,24 @@ export default function Home() {
                           {!isLocked && (
                             <div className="flex items-center justify-between bg-black/50 rounded-xl p-1.5 border border-white/10 mb-4 shadow-[inset_0_0_10px_rgba(0,0,0,0.8)]">
                                <button onClick={() => adjustQty(box.id, -1, remaining)} className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-lg transition-colors">-</button>
-                               <div className="flex items-center gap-2">
-                                 <span className="text-[10px] text-gray-500 uppercase">{t.qty}</span>
+                               <div className="flex items-center gap-1 md:gap-2">
+                                 <span className="text-[9px] md:text-[10px] text-gray-500 uppercase">{t.qty}</span>
                                  <input 
                                     type="number" 
                                     value={currentQty} 
                                     onChange={(e) => handleQtyChange(box.id, e.target.value, remaining)} 
-                                    className="w-12 text-center bg-transparent text-white font-mono font-bold outline-none no-spinners" 
+                                    className="w-10 md:w-12 text-center bg-transparent text-white font-mono font-bold outline-none no-spinners" 
                                  />
                                </div>
                                <button onClick={() => adjustQty(box.id, 1, remaining)} className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-lg transition-colors">+</button>
-                               <button onClick={() => setBuyQuantities(prev => ({...prev, [box.id]: remaining > 9999 ? 9999 : remaining}))} className="w-10 h-8 flex items-center justify-center text-[10px] text-emerald-400 font-bold bg-emerald-500/10 hover:bg-emerald-500/20 rounded-lg transition-colors ml-1">{t.max}</button>
+                               <button onClick={() => setBuyQuantities(prev => ({...prev, [box.id]: remaining > 9999 ? 9999 : remaining}))} className="w-10 h-8 flex items-center justify-center text-[9px] md:text-[10px] text-emerald-400 font-bold bg-emerald-500/10 hover:bg-emerald-500/20 rounded-lg transition-colors ml-1">{t.max}</button>
                             </div>
                           )}
 
                           <div className="flex items-center justify-between">
                             <div className="flex flex-col">
-                              <span className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Price</span>
-                              <span className="text-lg font-bold text-emerald-400 drop-shadow-[0_0_8px_rgba(16,185,129,0.4)]">
+                              <span className="text-[9px] md:text-[10px] text-gray-500 uppercase tracking-wider mb-1">Price</span>
+                              <span className="text-base md:text-lg font-bold text-emerald-400 drop-shadow-[0_0_8px_rgba(16,185,129,0.4)]">
                                 {box.price}
                               </span>
                             </div>
@@ -624,12 +617,12 @@ export default function Home() {
                               <button
                                 disabled={disableMint}
                                 onClick={() => handleBatchMintClick(box, currentQty)}
-                                className="!w-auto !min-w-[120px] !bg-[#0ae38d] hover:!bg-[#08c97d] !text-[#052b1b] !text-sm !font-bold !py-3 !px-5 !rounded-xl !border-none transition-all duration-300 shadow-[0_0_20px_rgba(10,227,141,0.3)] hover:shadow-[0_0_30px_rgba(10,227,141,0.6)] disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="!w-auto !min-w-[100px] md:!min-w-[120px] !bg-[#0ae38d] hover:!bg-[#08c97d] !text-[#052b1b] !text-xs md:!text-sm !font-bold !py-2.5 md:!py-3 !px-4 md:!px-5 !rounded-xl !border-none transition-all duration-300 shadow-[0_0_20px_rgba(10,227,141,0.3)] hover:shadow-[0_0_30px_rgba(10,227,141,0.6)] disabled:opacity-50 disabled:cursor-not-allowed"
                               >
                                 {isProcessing ? t.mintingBtn : t.mintBtn}
                               </button>
                             ) : (
-                              <button disabled className="bg-white/5 border border-white/10 text-gray-500 text-sm font-bold py-3 px-6 rounded-xl cursor-not-allowed">
+                              <button disabled className="bg-white/5 border border-white/10 text-gray-500 text-xs md:text-sm font-bold py-2.5 px-5 rounded-xl cursor-not-allowed">
                                 {t.lockedBtn}
                               </button>
                             )}
@@ -643,43 +636,45 @@ export default function Home() {
             </section>
 
             <section className="relative w-full">
-              
-              <div className="redeem-glass-box rounded-[2.5rem] p-10 flex flex-col relative overflow-hidden">
+              {/* 🌟 展厅容器：优化手机端内边距 */}
+              <div className="redeem-glass-box rounded-3xl md:rounded-[2.5rem] p-5 sm:p-6 md:p-10 flex flex-col relative overflow-hidden">
                 
                 <div className="relative z-20">
-                  <h3 className="text-3xl font-bold mb-3 text-white flex items-center gap-3 drop-shadow-md">
+                  <h3 className="text-2xl md:text-3xl font-bold mb-2 md:mb-3 text-white flex items-center gap-2 md:gap-3 drop-shadow-md">
                     {t.redeemTitle}
                   </h3> 
-                  <p className="text-gray-400 text-base mb-10 max-w-2xl">{t.redeemDesc}</p>
+                  <p className="text-gray-400 text-xs md:text-base mb-6 md:mb-10 max-w-2xl leading-relaxed">{t.redeemDesc}</p>
 
-                  <div className="bg-[#0b100e]/80 border border-white/5 p-6 md:p-8 rounded-[2rem] space-y-6 flex-1 shadow-[inset_0_4px_20px_rgba(0,0,0,0.5)] relative z-10 backdrop-blur-md">
+                  <div className="bg-[#0b100e]/80 border border-white/5 p-4 sm:p-6 md:p-8 rounded-2xl md:rounded-[2rem] space-y-4 md:space-y-6 flex-1 shadow-[inset_0_4px_20px_rgba(0,0,0,0.5)] relative z-10 backdrop-blur-md">
                     
-                    <div className="flex justify-between items-center border-b border-white/10 pb-5 mb-6">
-                      <div className="text-lg text-emerald-400 font-bold flex items-center gap-2">
+                    <div className="flex justify-between items-center border-b border-white/10 pb-4 md:pb-5 mb-4 md:mb-6">
+                      <div className="text-base md:text-lg text-emerald-400 font-bold flex items-center gap-2">
                         <span>✨</span> {t.holdingTitle}
                       </div>
                       <button 
                         onClick={handleRefresh}
                         disabled={isRefreshing}
-                        className={`flex items-center gap-2 text-xs px-4 py-2 rounded-xl border transition-all duration-300 ${isRefreshing ? 'bg-white/5 border-white/10 text-gray-500 cursor-wait' : 'bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border-emerald-500/30 shadow-[0_0_15px_rgba(16,185,129,0.1)]'}`}
+                        className={`flex items-center gap-1 md:gap-2 text-[10px] md:text-xs px-3 md:px-4 py-2 rounded-xl border transition-all duration-300 ${isRefreshing ? 'bg-white/5 border-white/10 text-gray-500 cursor-wait' : 'bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border-emerald-500/30 shadow-[0_0_15px_rgba(16,185,129,0.1)]'}`}
                       >
-                        <svg className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
-                        {isRefreshing ? '正在扫描展厅...' : t.refreshBtn}
+                        <svg className={`w-3 h-3 md:w-4 md:h-4 ${isRefreshing ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                        <span className="hidden sm:inline">{isRefreshing ? '正在扫描展厅...' : t.refreshBtn}</span>
+                        <span className="sm:hidden">{t.refreshBtn}</span>
                       </button>
                     </div>
 
                     {isOwnedLoading ? (
-                      <div className="flex flex-col items-center justify-center py-20 text-emerald-500/50">
-                        <svg className="animate-spin w-10 h-10 mb-4" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                        <p className="text-sm font-bold tracking-widest">{t.scanning}</p>
+                      <div className="flex flex-col items-center justify-center py-16 md:py-20 text-emerald-500/50">
+                        <svg className="animate-spin w-8 h-8 md:w-10 md:h-10 mb-4" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                        <p className="text-xs md:text-sm font-bold tracking-widest">{t.scanning}</p>
                       </div>
                     ) : !ownedNfts || ownedNfts.length === 0 ? (
-                      <div className="text-sm text-gray-500 bg-white/[0.02] py-24 rounded-2xl border border-dashed border-white/10 text-center flex flex-col items-center">
-                        <span className="text-4xl mb-4 opacity-40">🏛️</span>
+                      <div className="text-xs md:text-sm text-gray-500 bg-white/[0.02] py-16 md:py-24 rounded-2xl border border-dashed border-white/10 text-center flex flex-col items-center px-4">
+                        <span className="text-3xl md:text-4xl mb-4 opacity-40">🏛️</span>
                         {t.noNfts}
                       </div>
                     ) : (
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar pt-4">
+                      // 🌟 展厅列表网格自适应：手机 1 列，平板 2 列，大屏 3 列
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6 max-h-[50vh] md:max-h-[600px] overflow-y-auto pr-1 md:pr-2 custom-scrollbar pt-2 md:pt-4">
                         {ownedNfts.map((ownedNft) => {
                           const currentQty = ownedNft.quantityOwned || BigInt(0);
                           if (currentQty === BigInt(0)) return null;
@@ -713,13 +708,13 @@ export default function Home() {
                           }
 
                           return (
-                            <div key={ownedNft.id.toString()} className="flex flex-col items-center bg-[#070b09] hover:bg-[#0a120e] p-6 rounded-[2.5rem] border border-white/5 transition-all duration-500 group relative overflow-hidden shadow-[inset_0_0_20px_rgba(0,0,0,0.8)] mt-6">
+                            <div key={ownedNft.id.toString()} className="flex flex-col items-center bg-[#070b09] hover:bg-[#0a120e] p-5 md:p-6 rounded-[2rem] md:rounded-[2.5rem] border border-white/5 transition-all duration-500 group relative overflow-hidden shadow-[inset_0_0_20px_rgba(0,0,0,0.8)] mt-4 md:mt-6">
                               
                               <div className={`absolute top-0 w-[150%] h-[120%] pointer-events-none ${spotlightClass} opacity-60 group-hover:opacity-100 transition-opacity duration-500`}></div>
 
-                              <div className="relative w-full aspect-[4/3] flex flex-col items-center justify-center mb-10" style={{ perspective: '1000px' }}>
+                              <div className="relative w-full aspect-[4/3] flex flex-col items-center justify-center mb-8 md:mb-10" style={{ perspective: '1000px' }}>
                                 
-                                <div className="relative w-28 h-28 z-30 animate-spin-slow group-hover:[animation-play-state:paused] hover:scale-125 transition-transform duration-500 cursor-zoom-in" style={{ transformStyle: 'preserve-3d' }}>
+                                <div className="relative w-24 h-24 md:w-28 md:h-28 z-30 animate-spin-slow group-hover:[animation-play-state:paused] hover:scale-125 transition-transform duration-500 cursor-zoom-in" style={{ transformStyle: 'preserve-3d' }}>
                                   <MediaRenderer 
                                     client={client} 
                                     src={ownedNft.metadata.image} 
@@ -728,24 +723,24 @@ export default function Home() {
                                 </div>
 
                                 <div className="absolute bottom-[-15%] flex flex-col items-center justify-center w-full group-hover:translate-y-2 transition-transform duration-500">
-                                  <div className={`w-44 h-16 rounded-[50%] border-b-[4px] border-r-[2px] ${stageClass} absolute bottom-0`}></div>
-                                  <div className={`w-32 h-12 rounded-[50%] border-b-[2px] border-r-[1px] border-white/20 bg-[#040605] absolute bottom-3 z-10 shadow-[0_10px_20px_rgba(0,0,0,0.9)]`}></div>
-                                  <div className={`w-24 h-8 rounded-[50%] border-[2px] ${cardGlowClass} bg-black/90 absolute bottom-7 z-20 shadow-[inset_0_0_15px_rgba(255,255,255,0.2)] flex items-center justify-center`}>
-                                     <div className="w-10 h-4 rounded-[50%] bg-white/10 blur-sm"></div>
+                                  <div className={`w-36 md:w-44 h-12 md:h-16 rounded-[50%] border-b-[4px] border-r-[2px] ${stageClass} absolute bottom-0`}></div>
+                                  <div className={`w-24 md:w-32 h-10 md:h-12 rounded-[50%] border-b-[2px] border-r-[1px] border-white/20 bg-[#040605] absolute bottom-2 md:bottom-3 z-10 shadow-[0_10px_20px_rgba(0,0,0,0.9)]`}></div>
+                                  <div className={`w-16 md:w-24 h-6 md:h-8 rounded-[50%] border-[2px] ${cardGlowClass} bg-black/90 absolute bottom-5 md:bottom-7 z-20 shadow-[inset_0_0_15px_rgba(255,255,255,0.2)] flex items-center justify-center`}>
+                                     <div className="w-6 md:w-10 h-2 md:h-4 rounded-[50%] bg-white/10 blur-sm"></div>
                                   </div>
                                 </div>
                               </div>
 
-                              <div className="flex flex-col items-center w-full z-40 mt-auto bg-black/30 w-[110%] -mb-6 -mx-6 p-6 backdrop-blur-sm border-t border-white/5">
-                                <span className={`text-[10px] font-bold px-3 py-1 rounded-full border mb-3 ${tierBadgeClass}`}>
+                              <div className="flex flex-col items-center w-full z-40 mt-auto bg-black/30 w-[110%] -mb-5 md:-mb-6 -mx-5 md:-mx-6 p-5 md:p-6 backdrop-blur-sm border-t border-white/5">
+                                <span className={`text-[9px] md:text-[10px] font-bold px-3 py-1 rounded-full border mb-3 ${tierBadgeClass}`}>
                                   {tierLabel}
                                 </span>
                                 
-                                <div className="text-white font-mono text-xl font-bold mb-1 drop-shadow-md tracking-wider">
+                                <div className="text-white font-mono text-lg md:text-xl font-bold mb-1 drop-shadow-md tracking-wider">
                                   {t.idLabel} #{ownedNft.id.toString()}
                                 </div>
                                 
-                                <div className="text-gray-500 text-xs font-mono mb-5 bg-black/50 border border-white/5 px-4 py-1.5 rounded-xl">
+                                <div className="text-gray-500 text-[10px] md:text-xs font-mono mb-4 md:mb-5 bg-black/50 border border-white/5 px-3 md:px-4 py-1 md:py-1.5 rounded-xl">
                                   {t.qtyLabel}: <span className="text-white font-bold text-sm ml-1">{currentQty.toString()}</span>
                                 </div>
 
@@ -794,7 +789,7 @@ export default function Home() {
                                     }, 10000); 
                                   }}
                                   onError={(error: any) => { alert("销毁发生异常，请确保网络通畅。错误信息: " + error.message); }}
-                                  className="!w-full !bg-[#311116] hover:!bg-[#e11d48] !text-[#f43f5e] hover:!text-white !text-sm !font-bold !py-3.5 !rounded-2xl !border-none transition-all duration-300 shadow-[0_0_15px_rgba(225,29,72,0.2)] hover:shadow-[0_0_30px_rgba(225,29,72,0.6)] uppercase tracking-widest"
+                                  className="!w-full !bg-[#311116] hover:!bg-[#e11d48] !text-[#f43f5e] hover:!text-white !text-xs md:!text-sm !font-bold !py-3 md:!py-3.5 !rounded-xl md:!rounded-2xl !border-none transition-all duration-300 shadow-[0_0_15px_rgba(225,29,72,0.2)] hover:shadow-[0_0_30px_rgba(225,29,72,0.6)] uppercase tracking-widest"
                                 >
                                   {t.burnBtn}
                                 </TransactionButton>
@@ -812,68 +807,61 @@ export default function Home() {
         )}
       </div>
 
-      {/* 🌟 核心修复 3：无敌兜底的奖池全息预览弹窗 */}
+      {/* 🌟 核心修复：无敌兜底的奖池全息预览弹窗适配手机 */}
       {activePreviewBox && (
         <div 
           className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200" 
           onClick={() => setPreviewBoxId(null)}
         >
           <div 
-            className="bg-[#0b100e] border border-emerald-500/30 rounded-[2rem] p-6 md:p-10 w-full max-w-3xl relative shadow-[0_0_50px_rgba(16,185,129,0.15)] overflow-hidden" 
+            className="bg-[#0b100e] border border-emerald-500/30 rounded-2xl md:rounded-[2rem] p-5 md:p-10 w-[95vw] md:w-full max-w-3xl relative shadow-[0_0_50px_rgba(16,185,129,0.15)] overflow-hidden max-h-[90vh] overflow-y-auto custom-scrollbar" 
             onClick={e => e.stopPropagation()}
           >
-            <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 rounded-full blur-[80px] pointer-events-none"></div>
-            <button onClick={() => setPreviewBoxId(null)} className="absolute top-6 right-6 text-gray-500 hover:text-white transition-colors bg-white/5 hover:bg-white/10 rounded-full w-8 h-8 flex items-center justify-center z-20">✕</button>
+            <div className="absolute top-0 right-0 w-48 md:w-64 h-48 md:h-64 bg-emerald-500/10 rounded-full blur-[80px] pointer-events-none"></div>
+            <button onClick={() => setPreviewBoxId(null)} className="absolute top-4 right-4 md:top-6 md:right-6 text-gray-500 hover:text-white transition-colors bg-white/5 hover:bg-white/10 rounded-full w-8 h-8 flex items-center justify-center z-20">✕</button>
             
-            <div className="mb-8 text-center relative z-10">
-              <h3 className="text-2xl font-bold text-white mb-2 tracking-wide flex items-center justify-center gap-2">
-                {activePreviewBox.name} <span className="text-emerald-500">- {t.previewTitle}</span>
+            <div className="mb-6 md:mb-8 text-center relative z-10 pr-6">
+              <h3 className="text-xl md:text-2xl font-bold text-white mb-1 md:mb-2 tracking-wide flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2">
+                <span>{activePreviewBox.name}</span> <span className="text-emerald-500 hidden md:inline">-</span> <span className="text-emerald-500 text-sm md:text-2xl">{t.previewTitle}</span>
               </h3>
-              <p className="text-gray-400 text-sm">{t.previewDesc}</p>
+              <p className="text-gray-400 text-xs md:text-sm mt-2">{t.previewDesc}</p>
             </div>
 
-            {/* 超时兜底逻辑 */}
             {isCurrentlyLoadingNfts ? (
-              <div className="flex flex-col justify-center items-center py-16 space-y-4 relative z-10">
-                 <div className="w-10 h-10 border-4 border-emerald-500/20 border-t-emerald-500 rounded-full animate-spin"></div>
-                 <p className="text-emerald-500/50 text-sm font-mono tracking-widest">{t.scanning}</p>
+              <div className="flex flex-col justify-center items-center py-10 md:py-16 space-y-4 relative z-10">
+                 <div className="w-8 h-8 md:w-10 md:h-10 border-4 border-emerald-500/20 border-t-emerald-500 rounded-full animate-spin"></div>
+                 <p className="text-emerald-500/50 text-xs md:text-sm font-mono tracking-widest">{t.scanning}</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative z-10">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-6 relative z-10">
                 {hasFetchedNfts ? (
                   (allNfts as any[]).filter(nft => activePreviewBox.targetIds.includes(Number(nft.id))).map(nft => (
-                    <div key={nft.id.toString()} className="bg-[#030604]/50 rounded-2xl p-4 border border-white/10 text-center flex flex-col items-center shadow-[inset_0_0_15px_rgba(0,0,0,0.5)]">
-                       <div className="w-full aspect-square rounded-xl overflow-hidden bg-black mb-4 border border-white/5">
+                    <div key={nft.id.toString()} className="bg-[#030604]/50 rounded-xl md:rounded-2xl p-3 md:p-4 border border-white/10 text-center flex flex-col items-center shadow-[inset_0_0_15px_rgba(0,0,0,0.5)]">
+                       <div className="w-full aspect-square rounded-lg md:rounded-xl overflow-hidden bg-black mb-3 md:mb-4 border border-white/5">
                          <MediaRenderer client={client} src={nft.metadata.image} className="w-full h-full object-cover hover:scale-110 transition-transform duration-500" />
                        </div>
-                       <span className="text-emerald-400 font-bold font-mono text-lg drop-shadow-[0_0_8px_rgba(16,185,129,0.4)]">
+                       <span className="text-emerald-400 font-bold font-mono text-sm md:text-lg drop-shadow-[0_0_8px_rgba(16,185,129,0.4)]">
                          #{nft.id.toString()}
                        </span>
-                       <span className="text-gray-400 text-xs mt-1.5 font-bold line-clamp-1 bg-white/5 px-2 py-1 rounded-md">
-                         {nft.metadata.name || `TGY Mystery Item`}
+                       <span className="text-gray-400 text-[10px] md:text-xs mt-1 md:mt-1.5 font-bold line-clamp-1 bg-white/5 px-2 py-1 rounded-md w-full overflow-hidden text-ellipsis">
+                         {nft.metadata.name || `TGY Item`}
                        </span>
                     </div>
                   ))
                 ) : (
-                  /* 🚀 如果链上数据因为节点问题没抓到，立刻启用本地字典兜底！ */
                   NFT_GALLERY_DATA.filter(item => activePreviewBox.targetIds.includes(item.id)).map(item => (
-                    <div key={item.id} className="bg-[#030604]/50 rounded-2xl p-4 border border-emerald-500/20 text-center flex flex-col items-center shadow-[inset_0_0_15px_rgba(16,185,129,0.1)] relative overflow-hidden">
-                       
-                       <div className="w-full aspect-square rounded-xl bg-gradient-to-br from-emerald-900/40 to-black mb-4 flex flex-col items-center justify-center border border-white/5 relative group">
-                          <div className="text-5xl mb-2 group-hover:scale-125 transition-transform duration-300">
+                    <div key={item.id} className="bg-[#030604]/50 rounded-xl md:rounded-2xl p-3 md:p-4 border border-emerald-500/20 text-center flex flex-col items-center shadow-[inset_0_0_15px_rgba(16,185,129,0.1)] relative overflow-hidden">
+                       <div className="w-full aspect-square rounded-lg md:rounded-xl bg-gradient-to-br from-emerald-900/40 to-black mb-3 md:mb-4 flex flex-col items-center justify-center border border-white/5 relative group">
+                          <div className="text-4xl md:text-5xl mb-2 group-hover:scale-125 transition-transform duration-300">
                             {item.tier === 1 ? '🍵' : item.tier === 2 ? '🏛️' : '👑'}
                           </div>
-                          <span className="text-[10px] text-emerald-500/50 uppercase tracking-widest font-mono">TGY Asset</span>
+                          <span className="text-[8px] md:text-[10px] text-emerald-500/50 uppercase tracking-widest font-mono">Asset</span>
                        </div>
-                       
-                       <span className="text-emerald-400 font-bold font-mono text-lg drop-shadow-[0_0_8px_rgba(16,185,129,0.4)]">
+                       <span className="text-emerald-400 font-bold font-mono text-sm md:text-lg drop-shadow-[0_0_8px_rgba(16,185,129,0.4)]">
                          #{item.id}
                        </span>
-                       <span className="text-white text-sm mt-1.5 font-bold line-clamp-1">
+                       <span className="text-white text-xs md:text-sm mt-1 md:mt-1.5 font-bold line-clamp-1 w-full overflow-hidden text-ellipsis">
                          {item.name}
-                       </span>
-                       <span className="text-gray-500 text-[10px] mt-1 bg-white/5 px-2 py-0.5 rounded">
-                         RWA: {item.rwaReward}
                        </span>
                     </div>
                   ))
@@ -881,8 +869,8 @@ export default function Home() {
               </div>
             )}
 
-            <div className="mt-8 text-center relative z-10">
-               <p className="text-gray-500 text-xs italic bg-black/30 py-2 rounded-xl border border-white/5 inline-block px-6">
+            <div className="mt-6 md:mt-8 text-center relative z-10">
+               <p className="text-gray-500 text-[10px] md:text-xs italic bg-black/30 py-2 rounded-xl border border-white/5 inline-block px-4 md:px-6">
                  {t.probabilityNote}
                </p>
             </div>
@@ -893,7 +881,6 @@ export default function Home() {
       {/* 🌌 卡冈图雅黑洞全屏特效层 */}
       {burnAnim?.active && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-[#020005] overflow-hidden select-none" style={{ perspective: '1200px' }}>
-           
            <div className="absolute inset-0 z-0 opacity-40 animate-[slowSkyPan_60s_linear_infinite]"
                 style={{
                   backgroundImage: 'radial-gradient(2px 2px at 20px 30px, #ffffff, transparent), radial-gradient(1.5px 1.5px at 50px 70px, rgba(255,255,255,0.8), transparent), radial-gradient(2px 2px at 90px 160px, #ffccaa, transparent)',
@@ -904,7 +891,6 @@ export default function Home() {
            <div className="absolute w-[150vw] h-[150vw] bg-[radial-gradient(circle_at_center,rgba(50,20,100,0.4)_0%,transparent_60%)] z-0 blur-[50px] animate-pulse"></div>
 
            <div className="absolute flex items-center justify-center z-10 pointer-events-none w-full h-full" style={{ transform: 'rotateZ(-15deg)' }}>
-              
               <div className="absolute w-[280px] h-[400px] md:w-[420px] md:h-[600px] rounded-[50%] border-[20px] border-t-white border-b-orange-400 border-l-transparent border-r-transparent animate-[pulse_3s_ease-in-out_infinite]"
                    style={{
                      boxShadow: '0 0 80px 30px #ff5a00, inset 0 0 60px 20px #ff9800',
@@ -913,12 +899,10 @@ export default function Home() {
                      transform: 'rotateZ(90deg) scale(1.2)'
                    }}>
               </div>
-
               <div className="absolute z-20 w-[240px] h-[240px] md:w-[360px] md:h-[360px] bg-black rounded-full flex items-center justify-center"
                    style={{ boxShadow: '0 0 50px 20px rgba(0,0,0,1), 0 0 100px 40px rgba(255,70,0,0.5)' }}>
                  <div className="absolute w-[102%] h-[102%] rounded-full border-[3px] border-white/50 opacity-80 blur-[2px] animate-ping"></div>
               </div>
-              
               <div className="absolute z-30 flex items-center justify-center" style={{ transform: 'rotateX(75deg)', transformStyle: 'preserve-3d' }}>
                   <div className="absolute w-[800px] h-[800px] md:w-[1200px] md:h-[1200px] rounded-full animate-[spin_10s_linear_infinite_reverse]"
                        style={{
@@ -927,7 +911,6 @@ export default function Home() {
                          mixBlendMode: 'screen'
                        }}>
                   </div>
-                  
                   <div className="absolute w-[700px] h-[700px] md:w-[1000px] md:h-[1000px] rounded-full border-[40px] md:border-[60px] border-transparent animate-[spin_2s_linear_infinite]"
                        style={{
                          background: 'conic-gradient(from 180deg, transparent 0%, #ff4d00 15%, #ffcc00 35%, #ffffff 45%, #ffcc00 60%, #ff4d00 85%, transparent 100%)',
@@ -944,24 +927,24 @@ export default function Home() {
            <div className="absolute z-40 pointer-events-none transform-gpu animate-[spaghettification_3.5s_cubic-bezier(0.6,0,0.3,1)_forwards] flex items-center justify-center">
               <div className="relative p-1 rounded-2xl bg-black/40 border border-white/20">
                 {burnAnim.imageUrl ? (
-                  <MediaRenderer client={client} src={burnAnim.imageUrl} className="w-48 h-48 md:w-56 md:h-56 rounded-xl object-cover shadow-[0_0_80px_rgba(255,255,255,0.6)]" />
+                  <MediaRenderer client={client} src={burnAnim.imageUrl} className="w-40 h-40 md:w-56 md:h-56 rounded-xl object-cover shadow-[0_0_80px_rgba(255,255,255,0.6)]" />
                 ) : (
-                  <div className="w-48 h-48 md:w-56 md:h-56 bg-black rounded-xl border border-white/20"></div>
+                  <div className="w-40 h-40 md:w-56 md:h-56 bg-black rounded-xl border border-white/20"></div>
                 )}
                 <div className="absolute inset-0 bg-gradient-to-t from-red-600/70 via-orange-500/40 to-transparent mix-blend-color-dodge rounded-xl opacity-0 animate-[redshift_3.5s_ease-in_forwards]"></div>
               </div>
            </div>
 
-           <div className="absolute z-[60] opacity-0 animate-[cinematicFadeIn_2s_cubic-bezier(0.2,0.8,0.2,1)_3.5s_forwards] flex flex-col items-center w-full max-w-4xl px-6">
-              <h2 className="text-white font-extrabold text-3xl md:text-5xl tracking-[0.25em] text-center font-sans uppercase text-shadow-heavy">
+           <div className="absolute z-[60] opacity-0 animate-[cinematicFadeIn_2s_cubic-bezier(0.2,0.8,0.2,1)_3.5s_forwards] flex flex-col items-center w-full max-w-4xl px-4 md:px-6">
+              <h2 className="text-white font-extrabold text-2xl md:text-5xl tracking-[0.15em] md:tracking-[0.25em] text-center font-sans uppercase text-shadow-heavy">
                 {t.burnSuccessTitle}
               </h2>
-              <p className="text-emerald-400 font-bold font-mono text-xs md:text-sm tracking-[0.35em] mt-3 mb-12 text-center uppercase text-shadow-heavy">
+              <p className="text-emerald-400 font-bold font-mono text-[10px] md:text-sm tracking-[0.2em] md:tracking-[0.35em] mt-2 md:mt-3 mb-8 md:mb-12 text-center uppercase text-shadow-heavy">
                 {t.burnSuccessSub}
               </p>
               
-              <div className="w-full backdrop-blur-2xl bg-black/50 px-8 py-8 md:px-12 md:py-10 rounded-[2rem] border border-emerald-500/30 shadow-[0_30px_80px_rgba(0,0,0,0.9),0_0_30px_rgba(16,185,129,0.15)] transform-gpu transition-colors duration-500 hover:border-emerald-500/60">
-                <p className="text-white text-lg md:text-2xl font-bold leading-loose tracking-[0.1em] font-sans text-center" style={{ textShadow: '0 2px 10px rgba(0,0,0,1)' }}>
+              <div className="w-full backdrop-blur-2xl bg-black/50 px-6 py-6 md:px-12 md:py-10 rounded-3xl md:rounded-[2rem] border border-emerald-500/30 shadow-[0_30px_80px_rgba(0,0,0,0.9),0_0_30px_rgba(16,185,129,0.15)] transform-gpu transition-colors duration-500 hover:border-emerald-500/60">
+                <p className="text-white text-sm md:text-2xl font-bold leading-loose tracking-widest md:tracking-[0.1em] font-sans text-center" style={{ textShadow: '0 2px 10px rgba(0,0,0,1)' }}>
                   “ {burnAnim.quote} ”
                 </p>
               </div>
@@ -969,41 +952,40 @@ export default function Home() {
         </div>
       )}
 
-      {/* 🚀 批量开箱智能引擎 (Batch Mint Reveal) */}
+      {/* 🚀 批量开箱智能引擎 */}
       {mintAnim?.active && (
         <div className="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-[#050505]/95 backdrop-blur-3xl overflow-hidden" style={{ perspective: '1200px' }}>
-           
            <div className="absolute w-[200vw] h-[200vw] animate-[spin_6s_linear_infinite] opacity-30" 
                 style={{ background: `conic-gradient(from 0deg at 50% 50%, rgba(0,0,0,0) 0%, ${mintAnim.colorHex}0.6) 25%, rgba(0,0,0,0) 50%, ${mintAnim.colorHex}0.6) 75%, rgba(0,0,0,0) 100%)` }}>
            </div>
 
            <div className="absolute top-[8%] text-center z-40 opacity-0 animate-[fadeIn_0.5s_ease-in_forwards]">
-              <div className={`text-4xl md:text-5xl font-extrabold tracking-[0.2em] uppercase mb-4 ${mintAnim.tierClass} text-shadow-superheavy`}>
+              <div className={`text-2xl md:text-5xl font-extrabold tracking-[0.15em] md:tracking-[0.2em] uppercase mb-3 md:mb-4 ${mintAnim.tierClass} text-shadow-superheavy`}>
                 {t.mintTitle}
               </div>
-              <div className="text-gray-200 font-mono text-sm md:text-lg bg-black/50 px-6 py-2 rounded-xl border border-white/10 shadow-[0_0_15px_rgba(0,0,0,1)] text-shadow-heavy inline-block">
+              <div className="text-gray-200 font-mono text-xs md:text-lg bg-black/50 px-4 md:px-6 py-1.5 md:py-2 rounded-xl border border-white/10 shadow-[0_0_15px_rgba(0,0,0,1)] text-shadow-heavy inline-block">
                 {mintAnim.boxName} - {t.mintSub} (x{mintAnim.results.length})
               </div>
            </div>
 
            <div className="relative flex items-center justify-center w-full h-[60vh] z-30 mt-10">
-              <div className="absolute text-[8rem] filter drop-shadow-[0_0_80px_rgba(255,255,255,0.4)] animate-[boxExplode_1s_ease-out_forwards] z-20">🎁</div>
+              <div className="absolute text-[6rem] md:text-[8rem] filter drop-shadow-[0_0_80px_rgba(255,255,255,0.4)] animate-[boxExplode_1s_ease-out_forwards] z-20">🎁</div>
 
               {mintAnim.results.length <= 5 && (
-                 <div className="flex flex-wrap gap-4 md:gap-8 items-center justify-center mt-10 max-w-4xl mx-auto px-4">
+                 <div className="flex flex-wrap gap-3 md:gap-8 items-center justify-center mt-10 max-w-4xl mx-auto px-4">
                     {mintAnim.results.map((res, i) => (
                         <div key={i} className="opacity-0 animate-[cardFlyUp_1.5s_cubic-bezier(0.2,0.8,0.2,1)_forwards]" style={{ animationDelay: `${0.5 + i * 0.2}s` }}>
-                            <div className="w-28 h-28 md:w-44 md:h-44 rounded-[1.5rem] border-[3px] bg-black flex flex-col items-center justify-center overflow-hidden relative transition-transform duration-300 hover:scale-110 hover:z-50 shadow-[0_20px_50px_rgba(0,0,0,0.5)] cursor-pointer" 
+                            <div className="w-24 h-24 md:w-44 md:h-44 rounded-2xl md:rounded-[1.5rem] border-[2px] md:border-[3px] bg-black flex flex-col items-center justify-center overflow-hidden relative transition-transform duration-300 hover:scale-110 hover:z-50 shadow-[0_20px_50px_rgba(0,0,0,0.5)] cursor-pointer" 
                                  style={{ color: mintAnim.colorHex.replace('rgba', 'rgb').replace(',',' '), borderColor: mintAnim.colorHex.replace('rgba', 'rgb').replace(',',' ') }}>
                                {res.imageUrl ? (
                                   <MediaRenderer client={client} src={res.imageUrl} className="w-full h-full object-cover z-0" />
                                ) : (
-                                  <div className="w-full h-full bg-gradient-to-br from-emerald-900 to-black z-0 flex items-center justify-center text-4xl">
+                                  <div className="w-full h-full bg-gradient-to-br from-emerald-900 to-black z-0 flex items-center justify-center text-3xl md:text-4xl">
                                      {mintAnim.boxName.includes("Tier 1") ? '🍵' : mintAnim.boxName.includes("Tier 2") ? '🏛️' : '👑'}
                                   </div>
                                )}
                                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent z-10"></div>
-                               <div className="absolute bottom-3 font-mono text-[10px] md:text-xs font-bold tracking-widest uppercase text-white z-20 drop-shadow-md text-center px-2">{res.name}</div>
+                               <div className="absolute bottom-2 md:bottom-3 font-mono text-[8px] md:text-xs font-bold tracking-widest uppercase text-white z-20 drop-shadow-md text-center px-1 md:px-2 w-full overflow-hidden text-ellipsis whitespace-nowrap">{res.name}</div>
                             </div>
                         </div>
                     ))}
@@ -1011,7 +993,7 @@ export default function Home() {
               )}
 
               {mintAnim.results.length > 5 && (
-                 <div className="relative flex items-center justify-center mt-32 w-full max-w-3xl">
+                 <div className="relative flex items-center justify-center mt-24 md:mt-32 w-full max-w-3xl">
                     {mintAnim.results.slice(0, 15).map((res, i) => {
                         const totalCards = Math.min(mintAnim.results.length, 15);
                         const angle = -45 + (90 / (totalCards - 1)) * i;
@@ -1020,14 +1002,14 @@ export default function Home() {
                         return (
                             <div key={i} className="absolute origin-bottom opacity-0 animate-[cardFanOut_1.5s_cubic-bezier(0.2,0.8,0.2,1)_forwards]"
                                  style={{ animationDelay: `${0.5 + i * 0.1}s`, zIndex: i }}>
-                               <div style={{ transform: `rotate(${angle}deg) translateY(-${120 - translateY}px)` }} 
-                                    className="transition-transform duration-300 hover:-translate-y-32 hover:scale-110 cursor-pointer">
-                                  <div className="w-24 h-24 md:w-36 md:h-36 rounded-xl border-[3px] bg-black flex flex-col items-center justify-center overflow-hidden relative shadow-[0_20px_50px_rgba(0,0,0,0.8)]" 
+                               <div style={{ transform: `rotate(${angle}deg) translateY(-${100 - translateY}px)` }} 
+                                    className="transition-transform duration-300 hover:-translate-y-20 md:hover:-translate-y-32 hover:scale-110 cursor-pointer">
+                                  <div className="w-20 h-20 md:w-36 md:h-36 rounded-xl border-[2px] md:border-[3px] bg-black flex flex-col items-center justify-center overflow-hidden relative shadow-[0_20px_50px_rgba(0,0,0,0.8)]" 
                                        style={{ color: mintAnim.colorHex.replace('rgba', 'rgb').replace(',',' '), borderColor: mintAnim.colorHex.replace('rgba', 'rgb').replace(',',' ') }}>
                                      {res.imageUrl ? (
                                         <MediaRenderer client={client} src={res.imageUrl} className="w-full h-full object-cover z-0" />
                                      ) : (
-                                        <div className="w-full h-full bg-gradient-to-br from-emerald-900 to-black z-0 flex items-center justify-center text-4xl">
+                                        <div className="w-full h-full bg-gradient-to-br from-emerald-900 to-black z-0 flex items-center justify-center text-3xl md:text-4xl">
                                            {mintAnim.boxName.includes("Tier 1") ? '🍵' : mintAnim.boxName.includes("Tier 2") ? '🏛️' : '👑'}
                                         </div>
                                      )}
@@ -1040,9 +1022,9 @@ export default function Home() {
 
                     {mintAnim.results.length > 15 && (
                        <div className="absolute z-50 opacity-0 animate-[fadeIn_1s_ease-out_forwards]" style={{ animationDelay: '2.5s' }}>
-                          <div className="bg-black/80 backdrop-blur-md px-6 py-3 rounded-full border-2 border-emerald-500 shadow-[0_0_50px_#10b981] flex flex-col items-center transform hover:scale-110 transition-transform">
-                             <span className="text-white text-xs tracking-widest uppercase mb-1">More Items</span>
-                             <span className="text-emerald-400 text-3xl font-extrabold font-mono text-shadow-superheavy">
+                          <div className="bg-black/80 backdrop-blur-md px-4 md:px-6 py-2 md:py-3 rounded-full border-2 border-emerald-500 shadow-[0_0_30px_#10b981] md:shadow-[0_0_50px_#10b981] flex flex-col items-center transform hover:scale-110 transition-transform">
+                             <span className="text-white text-[10px] md:text-xs tracking-widest uppercase mb-1">More Items</span>
+                             <span className="text-emerald-400 text-2xl md:text-3xl font-extrabold font-mono text-shadow-superheavy">
                                +{mintAnim.results.length - 15}
                              </span>
                           </div>
